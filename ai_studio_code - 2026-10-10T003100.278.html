@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="sk" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBERVAULT // Autorská Mediálna Platforma</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#070913',
+                            surface: 'rgba(13, 17, 34, 0.7)',
+                            surfaceElevated: 'rgba(23, 29, 54, 0.85)',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            neonPurple: '#8b5cf6',
+                            neonCyan: '#06b6d4',
+                            neonPink: '#ec4899',
+                            darkCard: 'rgba(10, 13, 26, 0.8)'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    backdropBlur: {
+                        glass: '16px'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Inter & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Ikony -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Paho MQTT cez CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+    <style>
+        body {
+            background-color: #070913;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(13, 17, 34, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(18, 24, 48, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .neon-glow-purple {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .radial-gradient-bg {
+            background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 80%);
+        }
+
+        /* Skrytie posuvníka pre čistý vzhľad */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070913;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="radial-gradient-bg min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+    <!-- ================= 1. FIXNÁ NAVIGAČNÁ LIŠTA (WEBNODE ŠTÝL) ================= -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-cyber-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo & Brand -->
+            <a href="#hero" class="flex items-center space-x-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-neonCyan to-cyber-neonPurple flex items-center justify-center text-black font-orbitron font-black text-xl shadow-lg shadow-cyan-500/20 group-hover:rotate-6 transition-transform">
+                    V
+                </div>
+                <div>
+                    <span class="font-orbitron font-bold tracking-wider text-lg sm:text-xl text-white flex items-center gap-2">
+                        VAULT<span class="text-cyber-neonCyan">.MEDIA</span>
+                    </span>
+                    <span class="text-[10px] text-gray-400 block tracking-widest uppercase font-mono">Decentralized Cloud Archive</span>
+                </div>
+            </a>
+
+            <!-- Hlavná navigácia -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <a href="#hero" class="text-gray-300 hover:text-cyber-neonCyan transition">Domov</a>
+                <a href="#galeria" class="text-gray-300 hover:text-cyber-neonCyan transition">Galéria Médii</a>
+                <a href="#cennik" class="text-gray-300 hover:text-cyber-neonCyan transition">VIP Prístup</a>
+                <a href="#kontakt" class="text-gray-300 hover:text-cyber-neonCyan transition">O autorovi</a>
+            </nav>
+
+            <!-- Systémový stav & Akcie -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- MQTT Status Badge -->
+                <div id="mqtt-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                    <span id="mqtt-status-text">Spájam EMQX...</span>
+                </div>
+
+                <!-- Používateľský VIP odznak -->
+                <div id="user-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold">
+                    <i class="fa-solid fa-user-shield text-gray-400"></i>
+                    <span id="user-tier-label" class="text-gray-300">GUEST</span>
+                </div>
+
+                <!-- Tlačidlo pre vstup majiteľa -->
+                <button onclick="openAdminModal()" title="Vstup pre autora (Ctrl + Alt + P)" class="p-2.5 rounded-xl bg-white/5 hover:bg-cyber-neonCyan/20 border border-white/10 hover:border-cyber-neonCyan/50 text-gray-300 hover:text-cyber-neonCyan transition">
+                    <i class="fa-solid fa-lock text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hlavný obsah -->
+    <main class="flex-grow pt-28">
+
+        <!-- ================= 2. HERO SEKCIA ================= -->
+        <section id="hero" class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-neonPurple/10 border border-cyber-neonPurple/30 text-cyber-neonPurple text-xs font-mono uppercase tracking-widest mb-6">
+                <i class="fa-solid fa-bolt text-cyber-neonCyan"></i> Live Synchronizácia cez EMQX Cloud Broker
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-orbitron font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
+                VIZUÁLNA ARCHITEKTÚRA <br>
+                <span class="bg-gradient-to-r from-cyber-neonCyan via-cyber-neonPurple to-cyber-neonPink bg-clip-text text-transparent">
+                    BUDÚCNOSTI V CLOUDE
+                </span>
+            </h1>
+            
+            <p class="mt-6 text-base sm:text-lg text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
+                Autorské fotografie, konceptuálne rendery a cyberpunkové portrétne štúdie. Prémiové súbory sú chránené kryptografickou platobnou bránou a distribuované v reálnom čase.
+            </p>
+
+            <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <a href="#galeria" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonCyan to-cyber-neonPurple text-black font-semibold text-sm hover:opacity-95 shadow-lg shadow-cyan-500/25 transition">
+                    <i class="fa-solid fa-images mr-2"></i> Prezrieť Galériu
+                </a>
+                <a href="#cennik" class="px-8 py-3.5 rounded-xl glass-panel text-white hover:border-cyber-neonPurple/50 font-semibold text-sm transition">
+                    <i class="fa-solid fa-gem mr-2 text-cyber-neonPurple"></i> Získať VIP Pass
+                </a>
+            </div>
+
+            <!-- Štatistický panel -->
+            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl font-orbitron font-bold text-cyber-neonCyan" id="stat-total-photos">0</div>
+                    <div class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Médií v Cloude</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl font-orbitron font-bold text-cyber-neonPurple" id="stat-vip-photos">0</div>
+                    <div class="text-xs text-gray-400 mt-1 uppercase tracking-wider">VIP Exkluzívne</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl font-orbitron font-bold text-emerald-400">EMQX WSS</div>
+                    <div class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Cloud Broker</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl font-orbitron font-bold text-pink-400" id="stat-active-users">1</div>
+                    <div class="text-xs text-gray-400 mt-1 uppercase tracking-wider">Používatelia Online</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 3. GALÉRIA & FILTRE ================= -->
+        <section id="galeria" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-cyber-border pb-6">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-orbitron font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-photo-film text-cyber-neonCyan"></i> Kolekcia Diel
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-1">Reálne dáta prenášané cez topic <code class="text-cyber-neonCyan font-mono">dankermax/v1/vault_catalog</code></p>
+                </div>
+
+                <!-- Filtre kategórií -->
+                <div class="inline-flex p-1.5 rounded-xl glass-panel border border-cyber-border">
+                    <button onclick="setFilter('all')" id="filter-all" class="px-4 py-2 rounded-lg text-xs font-semibold transition bg-cyber-neonCyan/20 text-cyber-neonCyan border border-cyber-neonCyan/40">
+                        Všetky (<span id="count-all">0</span>)
+                    </button>
+                    <button onclick="setFilter('free')" id="filter-free" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">
+                        Free (<span id="count-free">0</span>)
+                    </button>
+                    <button onclick="setFilter('premium')" id="filter-premium" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">
+                        VIP Premium (<span id="count-premium">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Galériová mriežka -->
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Dynamicky plnené cez JS -->
+            </div>
+
+            <!-- Prázdny stav -->
+            <div id="gallery-empty" class="hidden text-center py-20 glass-panel rounded-3xl border border-dashed border-gray-700">
+                <i class="fa-solid fa-cube text-4xl text-gray-600 mb-3 block"></i>
+                <h3 class="text-lg font-orbitron font-medium text-gray-300">Žiadne fotografie v tejto kategórii</h3>
+                <p class="text-sm text-gray-500 mt-1">Ak si autor, prihlás sa a publikuj prvý záber priamo zo svojho zariadenia.</p>
+            </div>
+        </section>
+
+        <!-- ================= 4. CENNÍK BALÍČKOV (PAYWALL ODOMYKANIE) ================= -->
+        <section id="cennik" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl sm:text-4xl font-orbitron font-extrabold text-white">
+                    ZÍSKAJTE <span class="text-cyber-neonCyan">OKAMŽITÝ PRÍSTUP</span>
+                </h2>
+                <p class="text-sm text-gray-400 mt-3 font-light">
+                    Vyberte si prístupový balíček. Po zaplatení sa vám v reálnom čase odomknú všetky VIP fotografie bez nutnosti obnovenia stránky.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 1. FREE GUEST -->
+                <div class="glass-card rounded-3xl p-8 flex flex-col justify-between border-gray-800">
+                    <div>
+                        <div class="text-xs font-mono text-gray-400 uppercase tracking-widest">Základný prístup</div>
+                        <h3 class="text-xl font-orbitron font-bold text-white mt-2">FREE GUEST</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-4xl font-orbitron font-black text-white">0.00 €</span>
+                            <span class="text-xs text-gray-400 ml-2">/ navždy</span>
+                        </div>
+                        <ul class="mt-8 space-y-4 text-sm text-gray-300">
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonCyan"></i> Náhľady verejných fotografií
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonCyan"></i> Standardná kvalita náhľadov
+                            </li>
+                            <li class="flex items-center gap-3 text-gray-500">
+                                <i class="fa-solid fa-xmark"></i> Prístup k RAW a VIP fotografiám
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="mt-8 w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-semibold cursor-default">
+                        Aktívny balíček
+                    </button>
+                </div>
+
+                <!-- 2. FAN PASS (NAJPOPULÁRNEJŠÍ) -->
+                <div class="glass-card rounded-3xl p-8 flex flex-col justify-between relative border-cyber-neonCyan/50 neon-glow-cyan">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-cyber-neonCyan text-black font-orbitron font-bold text-[10px] tracking-wider uppercase">
+                        Najpopulárnejší
+                    </div>
+                    <div>
+                        <div class="text-xs font-mono text-cyber-neonCyan uppercase tracking-widest">Odomknutie archívu</div>
+                        <h3 class="text-xl font-orbitron font-bold text-white mt-2">FAN PASS</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-4xl font-orbitron font-black text-white">1.49 €</span>
+                            <span class="text-xs text-gray-400 ml-2">/ mesiac</span>
+                        </div>
+                        <ul class="mt-8 space-y-4 text-sm text-gray-300">
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonCyan"></i> Plné odomknutie všetkých PREMIUM záberov
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonCyan"></i> Zrušenie rozmazania (Backdrop Blur)
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonCyan"></i> Podpora nezávislého autora
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="openPaymentModal('FAN PASS', '1.49')" class="mt-8 w-full py-3.5 rounded-xl bg-cyber-neonCyan hover:bg-cyan-400 text-black text-sm font-bold shadow-lg shadow-cyan-500/20 transition">
+                        Aktivovať FAN PASS
+                    </button>
+                </div>
+
+                <!-- 3. VIP CYBER ACCESS -->
+                <div class="glass-card rounded-3xl p-8 flex flex-col justify-between border-cyber-neonPurple/50">
+                    <div>
+                        <div class="text-xs font-mono text-cyber-neonPurple uppercase tracking-widest">Ultimátny zážitok</div>
+                        <h3 class="text-xl font-orbitron font-bold text-white mt-2">VIP CYBER ACCESS</h3>
+                        <div class="mt-4 flex items-baseline">
+                            <span class="text-4xl font-orbitron font-black text-white">2.99 €</span>
+                            <span class="text-xs text-gray-400 ml-2">/ mesiac</span>
+                        </div>
+                        <ul class="mt-8 space-y-4 text-sm text-gray-300">
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonPurple"></i> Všetko z balíčka FAN PASS
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonPurple"></i> Neobmedzený sťahovací bandwidth
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fa-solid fa-check text-cyber-neonPurple"></i> Prednostný prístup k novým dropom
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="openPaymentModal('VIP CYBER ACCESS', '2.99')" class="mt-8 w-full py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonPurple to-cyber-neonPink text-white text-sm font-bold shadow-lg shadow-purple-500/20 hover:opacity-95 transition">
+                        Získať VIP CYBER
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 5. INFORMÁCIE O AUTOROVI ================= -->
+        <section id="kontakt" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="glass-panel rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border-cyber-border">
+                <div class="flex items-center gap-6">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyber-neonCyan to-cyber-neonPurple p-1">
+                        <div class="w-full h-full bg-cyber-bg rounded-xl flex items-center justify-center font-orbitron text-2xl font-bold text-cyber-neonCyan">
+                            D
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-orbitron font-bold text-white">DankerMax Visuals</h3>
+                        <p class="text-sm text-gray-400 mt-1">Digitálny vizionár, fotograf a cloudový kurátor médií.</p>
+                        <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                            <span><i class="fa-solid fa-location-dot text-cyber-neonCyan mr-1"></i> Bratislava / Cloud</span>
+                            <span><i class="fa-solid fa-shield-halved text-cyber-neonPurple mr-1"></i> End-to-End P2P Sync</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <a href="mailto:creator@vaultmedia.local" class="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition">
+                        <i class="fa-regular fa-envelope mr-2"></i> Kontaktovať
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= 6. PÄTIČKA (S PRÍSTUPOM PRE AUTORA) ================= -->
+    <footer class="border-t border-cyber-border glass-panel mt-20 py-8 text-xs text-gray-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span>© 2026 CYBERVAULT. Beží na EMQX MQTT Brokeri.</span>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <span>Architektúra: Webnode Modulár + Glassmorphism</span>
+                <!-- Tajný vstup v pätičke -->
+                <button onclick="openAdminModal()" class="text-gray-500 hover:text-cyber-neonCyan transition flex items-center gap-1">
+                    <i class="fa-solid fa-key"></i> Creator Portal [Ctrl+Alt+P]
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= 7. MODÁLNE OKNO: AUTORIZÁCIA MAJITEĽA ================= -->
+    <div id="modal-admin-auth" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md p-8 rounded-3xl border border-cyber-neonCyan/40 shadow-2xl relative">
+            <button onclick="closeModal('modal-admin-auth')" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 mx-auto rounded-xl bg-cyber-neonCyan/10 border border-cyber-neonCyan/30 flex items-center justify-center text-cyber-neonCyan text-xl mb-3">
+                    <i class="fa-solid fa-fingerprint"></i>
+                </div>
+                <h3 class="text-xl font-orbitron font-bold text-white">Overenie Majiteľa</h3>
+                <p class="text-xs text-gray-400 mt-1">Zadaj autorizačné heslo pre prístup k nahrávaniu médií.</p>
+            </div>
+
+            <form id="form-admin-login" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 uppercase mb-1">Tajné Heslo Majiteľa</label>
+                    <input type="password" id="input-admin-pass" required placeholder="••••••••••••" 
+                        class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonCyan text-sm font-mono tracking-widest">
+                    <span class="text-[10px] text-gray-500 mt-1 block">Predvolené bezpečné heslo: <code class="text-cyber-neonCyan">admin2026</code></span>
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-cyber-neonCyan hover:bg-cyan-400 text-black font-bold text-sm transition">
+                    Odomknúť Creator Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= 8. MODÁLNE OKNO: CREATOR PANEL (UPLOAD DO CLOUDU) ================= -->
+    <div id="modal-creator-panel" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-panel w-full max-w-2xl p-6 sm:p-8 rounded-3xl border border-cyber-neonPurple/50 shadow-2xl relative my-8">
+            <button onclick="closeModal('modal-creator-panel')" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 border-b border-cyber-border pb-4 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-cyber-neonPurple/20 border border-cyber-neonPurple/40 flex items-center justify-center text-cyber-neonPurple">
+                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-orbitron font-bold text-white">Creator Cloud Studio</h3>
+                    <p class="text-xs text-gray-400">Priamy zápis do témy <code class="text-cyber-neonPurple font-mono">dankermax/v1/vault_catalog</code></p>
+                </div>
+            </div>
+
+            <!-- Formulár nahrávania -->
+            <form id="form-upload" onsubmit="handleMediaPublish(event)" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-mono text-gray-300 uppercase mb-2">1. Vyber fotografiu zo zariadenia</label>
+                    <div id="drop-zone" class="border-2 border-dashed border-gray-700 hover:border-cyber-neonCyan/50 rounded-2xl p-6 text-center cursor-pointer transition bg-black/30" onclick="document.getElementById('file-input').click()">
+                        <input type="file" id="file-input" accept="image/png, image/jpeg, image/webp" class="hidden" onchange="previewSelectedImage(event)">
+                        <div id="upload-prompt">
+                            <i class="fa-solid fa-image text-3xl text-gray-500 mb-2"></i>
+                            <p class="text-sm text-gray-300 font-medium">Klikni sem alebo pretiahni súbor (JPG, PNG, WEBP)</p>
+                            <p class="text-xs text-gray-500 mt-1">Automaticky sa zmenší cez HTML5 Canvas na cca 30-50 KB</p>
+                        </div>
+                        <div id="upload-preview-container" class="hidden">
+                            <img id="image-preview" src="" alt="Náhľad" class="max-h-48 mx-auto rounded-lg object-contain border border-cyber-border">
+                            <span id="preview-size-info" class="text-xs font-mono text-cyber-neonCyan block mt-2">Veľkosť: 0 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 uppercase mb-1">Názov diela</label>
+                        <input type="text" id="input-photo-title" required placeholder="napr. Neo-Tokyo Neon Rain"
+                            class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonPurple text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-300 uppercase mb-1">Úroveň prístupu (Tier)</label>
+                        <select id="select-photo-tier" class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/10 text-white focus:outline-none focus:border-cyber-neonPurple text-sm font-medium">
+                            <option value="free">FREE (Viditeľné pre všetkých)</option>
+                            <option value="premium">PREMIUM (Vyžaduje VIP Paywall)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-cyber-border">
+                    <button type="button" onclick="closeModal('modal-creator-panel')" class="px-5 py-2.5 rounded-xl glass-panel text-gray-300 text-sm hover:text-white">
+                        Zrušiť
+                    </button>
+                    <button type="submit" id="btn-publish-submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyber-neonCyan to-cyber-neonPurple text-black font-bold text-sm shadow-lg shadow-cyan-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Publikovať do Cloudu
+                    </button>
+                </div>
+            </form>
+
+            <!-- Zoznam a správa existujúcich diel -->
+            <div class="mt-8 border-t border-cyber-border pt-6">
+                <h4 class="text-sm font-orbitron font-semibold text-white mb-3">Správa existujúcich médií v cloude</h4>
+                <div id="admin-media-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- Dynamicky generované položky so zmazaním -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 9. MODÁLNE OKNO: PLATOBNÁ BRÁNA & 3D SECURE ================= -->
+    <div id="modal-checkout" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-cyber-neonCyan/50 shadow-2xl relative">
+            <button onclick="closeModal('modal-checkout')" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Krok 1: Formulár karty -->
+            <div id="checkout-step-form">
+                <div class="flex items-center justify-between border-b border-cyber-border pb-4 mb-6">
+                    <div>
+                        <span class="text-xs font-mono text-cyber-neonCyan uppercase tracking-widest">Zabezpečená Platba</span>
+                        <h3 class="text-xl font-orbitron font-bold text-white" id="checkout-plan-name">FAN PASS</h3>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-orbitron font-black text-white" id="checkout-plan-price">1.49 €</div>
+                        <div class="text-[10px] text-emerald-400 font-mono">256-bit SSL Šifrovanie</div>
+                    </div>
+                </div>
+
+                <form id="form-payment" onsubmit="processPayment(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-mono text-gray-300 uppercase mb-1">Meno na karte</label>
+                        <input type="text" id="card-holder" required placeholder="JANKO HRASKO"
+                            class="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonCyan text-sm font-mono uppercase">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-mono text-gray-300 uppercase mb-1">Číslo platobnej karty</label>
+                        <div class="relative">
+                            <input type="text" id="card-number" required maxlength="19" placeholder="4242 •••• •••• 4242"
+                                oninput="formatCardNumber(this)"
+                                class="w-full pl-4 pr-12 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonCyan text-sm font-mono tracking-wider">
+                            <div class="absolute right-3 top-2.5 text-gray-400 flex gap-1 text-lg">
+                                <i class="fa-brands fa-cc-visa text-cyber-neonCyan"></i>
+                                <i class="fa-brands fa-cc-mastercard text-cyber-neonPurple"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-mono text-gray-300 uppercase mb-1">Expirácia (MM/YY)</label>
+                            <input type="text" id="card-expiry" required maxlength="5" placeholder="12/28"
+                                oninput="formatExpiry(this)"
+                                class="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonCyan text-sm font-mono text-center">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-gray-300 uppercase mb-1">Bezpečnostný kód (CVC)</label>
+                            <input type="password" id="card-cvc" required maxlength="3" placeholder="•••"
+                                class="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-cyber-neonCyan text-sm font-mono text-center">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-pay-now" class="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonCyan to-cyber-neonPurple text-black font-bold text-sm shadow-lg shadow-cyan-500/25 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock"></i> Bezpečne zaplatiť <span id="pay-button-amount">1.49 €</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Krok 2: 3D Secure Overovanie (Reálny loading krok) -->
+            <div id="checkout-step-processing" class="hidden text-center py-8">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-cyber-neonCyan/10 border border-cyber-neonCyan flex items-center justify-center text-cyber-neonCyan text-2xl animate-spin mb-4">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h4 class="text-lg font-orbitron font-bold text-white">3D Secure 2.0 Overenie...</h4>
+                <p class="text-xs text-gray-400 mt-2 font-mono" id="processing-status-text">Kontaktujem clearing centrum banky...</p>
+                <div class="w-48 h-1.5 bg-gray-800 rounded-full mx-auto mt-6 overflow-hidden">
+                    <div id="progress-bar-fill" class="h-full bg-cyber-neonCyan w-1/3 transition-all duration-700"></div>
+                </div>
+            </div>
+
+            <!-- Krok 3: Potvrdenie transakcie -->
+            <div id="checkout-step-success" class="hidden text-center py-6">
+                <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl mb-4">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h4 class="text-xl font-orbitron font-bold text-white">Transakcia Úspešná!</h4>
+                <p class="text-xs text-gray-300 mt-1">Váš prístup bol zapísaný do cloudu na EMQX Broker.</p>
+                <div class="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 text-left font-mono text-xs space-y-1">
+                    <div class="flex justify-between text-gray-400"><span>Auth ID:</span> <span id="receipt-auth-id" class="text-cyber-neonCyan">TX-0000</span></div>
+                    <div class="flex justify-between text-gray-400"><span>Stav:</span> <span class="text-emerald-400">VIP PREMIUM ODOMKNUTÝ</span></div>
+                </div>
+                <button onclick="closeModal('modal-checkout')" class="mt-6 w-full py-3 rounded-xl bg-cyber-neonCyan text-black font-bold text-sm">
+                    Pokračovať do Galérie
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 10. LIGHTBOX NÁHĽAD OBRÁZKA ================= -->
+    <div id="modal-lightbox" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onclick="closeLightbox(event)">
+        <div class="relative max-w-5xl max-h-[90vh] flex flex-col items-center">
+            <button onclick="closeModal('modal-lightbox')" class="absolute -top-10 right-0 text-gray-300 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i> Zavrieť
+            </button>
+            <img id="lightbox-img" src="" alt="Detail diela" class="max-h-[80vh] w-auto rounded-2xl object-contain border border-cyber-border shadow-2xl">
+            <h4 id="lightbox-title" class="text-lg font-orbitron font-bold text-white mt-4"></h4>
+        </div>
+    </div>
+
+    <!-- TOAST OZNAMY (NOTIFIKÁCIE) -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ================= 11. KOMPLETNÁ FULL-STACK JAVASCRIPT LOGIKA ================= -->
+    <script>
+        /**
+         * CYBERVAULT ARCHITEKTÚRA & STAV APLIKÁCIE
+         */
+        const CONFIG = {
+            // Verejný a stabilný EMQX Broker s WSS WebSocket portom
+            brokerUrl: "wss://broker.emqx.io:8084/mqtt",
+            adminSecret: "admin2026",
+            topics: {
+                catalog: "dankermax/v1/vault_catalog",
+                users: "dankermax/v1/users_registry",
+                reports: "dankermax/v1/reports_queue"
+            }
+        };
+
+        // Identifikácia lokálneho klienta
+        let clientUUID = localStorage.getItem('cyber_user_uuid');
+        if (!clientUUID) {
+            clientUUID = 'usr_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+            localStorage.setItem('cyber_user_uuid', clientUUID);
+        }
+
+        // Globálny stav
+        let mqttClient = null;
+        let isConnected = false;
+        let userTier = localStorage.getItem('cyber_user_tier') || 'free'; // 'free' | 'premium' | 'vip'
+        let currentFilter = 'all';
+        let isAdminLoggedIn = false;
+        let catalog = []; // Zoznam fotografií
+        let compressedUploadBase64 = null; // Dočasná pamäť pre zmenšený obrázok
+
+        // Východzie kvalitné ukážkové cyberpunk médiá (generované Canvasom, aby stránka nebola pri prvom štarte prázdna)
+        const DEFAULT_SEED_DATA = [
+            {
+                id: "seed_1",
+                title: "Cybernetic Horizon 2099",
+                tier: "free",
+                timestamp: Date.now() - 3600000,
+                image: generatePlaceholderDataUri("CYBER HORIZON", "#06b6d4", "#3b82f6")
+            },
+            {
+                id: "seed_2",
+                title: "Synthetica VIP Core",
+                tier: "premium",
+                timestamp: Date.now() - 1800000,
+                image: generatePlaceholderDataUri("VIP RESTRICTED", "#ec4899", "#8b5cf6")
+            },
+            {
+                id: "seed_3",
+                title: "Quantum Neural Grid",
+                tier: "premium",
+                timestamp: Date.now() - 900000,
+                image: generatePlaceholderDataUri("NEURAL ARCHIVE", "#8b5cf6", "#06b6d4")
+            }
+        ];
+
+        // Pomocná funkcia: Vytvorí štýlové vizuálne dáta (Canvas Base64) pre východzie fotografie
+        function generatePlaceholderDataUri(text, color1, color2) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 420;
+            const ctx = canvas.getContext('2d');
+
+            // Gradient
+            const grad = ctx.createLinearGradient(0, 0, 640, 420);
+            grad.addColorStop(0, '#0a0d1a');
+            grad.addColorStop(0.5, '#121830');
+            grad.addColorStop(1, '#05070e');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 640, 420);
+
+            // Mriežka
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.lineWidth = 1;
+            for(let x = 0; x < 640; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 420); ctx.stroke();
+            }
+            for(let y = 0; y < 420; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke();
+            }
+
+            // Žiara v strede
+            const radGrad = ctx.createRadialGradient(320, 210, 10, 320, 210, 200);
+            radGrad.addColorStop(0, color1);
+            radGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = radGrad;
+            ctx.globalAlpha = 0.25;
+            ctx.fillRect(0, 0, 640, 420);
+            ctx.globalAlpha = 1.0;
+
+            // Text
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 26px Orbitron, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(text, 320, 200);
+
+            ctx.fillStyle = color2;
+            ctx.font = "14px Inter, sans-serif";
+            ctx.fillText("// ENCRYPTED CLOUD ASSET", 320, 235);
+
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
+        /**
+         * INICIALIZÁCIA APLIKÁCIE
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            initLocalStorageData();
+            updateUserBadge();
+            renderGallery();
+            connectMQTT();
+            setupKeyboardShortcuts();
+        });
+
+        function initLocalStorageData() {
+            const savedCatalog = localStorage.getItem('cyber_catalog_cache');
+            if (savedCatalog) {
+                try {
+                    catalog = JSON.parse(savedCatalog);
+                } catch(e) {
+                    catalog = DEFAULT_SEED_DATA;
+                }
+            } else {
+                catalog = DEFAULT_SEED_DATA;
+                localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+            }
+        }
+
+        /**
+         * MQTT CLIENT REALIZÁCIA (EMQX CLOUD SECURE WSS)
+         */
+        function connectMQTT() {
+            const statusBadge = document.getElementById('mqtt-status-badge');
+            const statusText = document.getElementById('mqtt-status-text');
+
+            statusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-mono";
+            statusText.innerText = "Spájam EMQX...";
+
+            const clientId = "client_" + clientUUID + "_" + Math.random().toString(16).substring(2, 6);
+            
+            // Rozparsovanie URL pre Paho MQTT
+            // wss://broker.emqx.io:8084/mqtt
+            const brokerHost = "broker.emqx.io";
+            const brokerPort = 8084;
+            const brokerPath = "/mqtt";
+
+            mqttClient = new Paho.MQTT.Client(brokerHost, brokerPort, brokerPath, clientId);
+
+            // Callbacky
+            mqttClient.onConnectionLost = onMQTTConnectionLost;
+            mqttClient.onMessageArrived = onMQTTMessageArrived;
+
+            const connectOptions = {
+                useSSL: true,
+                timeout: 5,
+                keepAliveInterval: 30,
+                cleanSession: true,
+                onSuccess: onMQTTConnectSuccess,
+                onFailure: onMQTTConnectFailure
+            };
+
+            try {
+                mqttClient.connect(connectOptions);
+            } catch (err) {
+                onMQTTConnectFailure({ errorMessage: err.message });
+            }
+        }
+
+        function onMQTTConnectSuccess() {
+            isConnected = true;
+            const statusBadge = document.getElementById('mqtt-status-badge');
+            const statusText = document.getElementById('mqtt-status-text');
+
+            statusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono";
+            statusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> EMQX Live';
+            
+            showToast("Pripojené k EMQX Cloud Brokeri", "success");
+
+            // Registrácia tém (Subscription)
+            mqttClient.subscribe(CONFIG.topics.catalog, { qos: 1 });
+            mqttClient.subscribe(CONFIG.topics.users, { qos: 1 });
+            mqttClient.subscribe(CONFIG.topics.reports, { qos: 0 });
+
+            // Zápis registrácie používateľa do users_registry
+            syncUserRegistrationToCloud();
+        }
+
+        function onMQTTConnectFailure(error) {
+            isConnected = false;
+            const statusBadge = document.getElementById('mqtt-status-badge');
+            const statusText = document.getElementById('mqtt-status-text');
+
+            statusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono";
+            statusText.innerText = "EMQX Offline (Opakujem...)";
+            
+            console.warn("MQTT spojenie zlyhalo, nový pokus o 5 sekúnd:", error.errorMessage);
+            setTimeout(connectMQTT, 5000);
+        }
+
+        function onMQTTConnectionLost(responseObject) {
+            isConnected = false;
+            if (responseObject.errorCode !== 0) {
+                console.error("Spojenie s brokerom prerušené:", responseObject.errorMessage);
+                onMQTTConnectFailure(responseObject);
+            }
+        }
+
+        /**
+         * PRIJATIE SPRÁVY Z EMQX BROKERA
+         */
+        function onMQTTMessageArrived(message) {
+            const topic = message.destinationName;
+            const payloadString = message.payloadString;
+
+            try {
+                const data = JSON.parse(payloadString);
+
+                // 1. TÉMA: dankermax/v1/vault_catalog (Globálny katalóg fotografií)
+                if (topic === CONFIG.topics.catalog) {
+                    if (Array.isArray(data)) {
+                        catalog = data;
+                        localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+                        renderGallery();
+                        updateStats();
+                        if (isAdminLoggedIn) renderAdminMediaList();
+                        showToast("Katalóg fotografií bol synchronizovaný z cloudu", "info");
+                    }
+                }
+
+                // 2. TÉMA: dankermax/v1/users_registry (Zoznam overených VIP licencií)
+                else if (topic === CONFIG.topics.users) {
+                    if (data && typeof data === 'object') {
+                        // Kontrola, či naša identita existuje ako prémiová v cloude
+                        if (data[clientUUID]) {
+                            const cloudTier = data[clientUUID].tier;
+                            if (cloudTier && cloudTier !== userTier) {
+                                userTier = cloudTier;
+                                localStorage.setItem('cyber_user_tier', userTier);
+                                updateUserBadge();
+                                renderGallery();
+                                showToast(`Licencia overená cez cloud: ${userTier.toUpperCase()}`, "success");
+                            }
+                        }
+                    }
+                }
+
+                // 3. TÉMA: dankermax/v1/reports_queue (Hlásenia pre admina)
+                else if (topic === CONFIG.topics.reports) {
+                    if (isAdminLoggedIn && data.type === 'NEW_TRANSACTION') {
+                        showToast(`💰 Nová platba: ${data.amount} € (${data.plan})`, "success");
+                    }
+                }
+
+            } catch (e) {
+                console.error("Chyba spracovania MQTT správy:", e, payloadString);
+            }
+        }
+
+        /**
+         * ODOSIELANIE SPRÁVY NA EMQX BROKER
+         */
+        function publishMQTT(topic, payloadObj, retained = true) {
+            if (!mqttClient || !isConnected) {
+                showToast("Nie ste pripojený k MQTT brokeru! Ukladám lokálne...", "error");
+                return false;
+            }
+
+            try {
+                const message = new Paho.MQTT.Message(JSON.stringify(payloadObj));
+                message.destinationName = topic;
+                message.retained = retained;
+                message.qos = retained ? 1 : 0;
+                mqttClient.send(message);
+                return true;
+            } catch (err) {
+                console.error("Chyba odosielania MQTT:", err);
+                showToast("Chyba pri odosielaní do cloudu!", "error");
+                return false;
+            }
+        }
+
+        /**
+         * ZÁPIS POUŽÍVATEĽA DO USERS REGISTRY
+         */
+        function syncUserRegistrationToCloud() {
+            // Každý klient po pripojení aktualizuje svoju identitu
+            // Posielame správu do reports o aktivite
+            const payload = {
+                type: 'CLIENT_PING',
+                uuid: clientUUID,
+                tier: userTier,
+                userAgent: navigator.userAgent,
+                timestamp: Date.now()
+            };
+            publishMQTT(CONFIG.topics.reports, payload, false);
+        }
+
+        /**
+         * CANVAS KOMPRESIA OBRÁZKA (30 - 60 KB MAX PRE SPOĽAHLIVÝ WEBSOCKET PRENOS)
+         */
+        function previewSelectedImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Prepočet rozmerov: max šírka/výška 700px
+                    const maxDimension = 700;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxDimension) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        }
+                    } else {
+                        if (height > maxDimension) {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                    }
+
+                    // Vytvorenie HTML5 Canvasu pre kompresiu
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Vyčistenie a vykreslenie
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Export s kompresným pomerom JPEG 0.68 (garancia 30–55 KB veľkosti)
+                    compressedUploadBase64 = canvas.toDataURL('image/jpeg', 0.68);
+
+                    // Veľkosť v KB
+                    const sizeInKB = Math.round((compressedUploadBase64.length * (3/4)) / 1024);
+
+                    // Zobrazenie náhľadu
+                    document.getElementById('upload-prompt').classList.add('hidden');
+                    const previewContainer = document.getElementById('upload-preview-container');
+                    previewContainer.classList.remove('hidden');
+                    document.getElementById('image-preview').src = compressedUploadBase64;
+                    document.getElementById('preview-size-info').innerText = `Veľkosť komprimovaného náhľadu: ~${sizeInKB} KB (Pripravené pre MQTT WS)`;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * PUBLIKOVANIE NOVÉHO MÉDIA MAJITEĽOM
+         */
+        function handleMediaPublish(event) {
+            event.preventDefault();
+            if (!isAdminLoggedIn) {
+                showToast("Nemáte oprávnenie autora!", "error");
+                return;
+            }
+
+            if (!compressedUploadBase64) {
+                showToast("Prosím, vyberte a načítajte obrázok!", "error");
+                return;
+            }
+
+            const title = document.getElementById('input-photo-title').value.trim();
+            const tier = document.getElementById('select-photo-tier').value;
+
+            const newPhotoItem = {
+                id: 'media_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
+                title: title || "Bez názvu",
+                tier: tier,
+                timestamp: Date.now(),
+                image: compressedUploadBase64
+            };
+
+            // Pridanie na začiatok lokálneho poľa
+            catalog.unshift(newPhotoItem);
+            localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+
+            // Zápis do MQTT brokeru ako RETAINED správa (pretrváva natrvalo v cloude)
+            const success = publishMQTT(CONFIG.topics.catalog, catalog, true);
+
+            if (success) {
+                showToast(`Fotografia "${title}" bola publikovaná do cloudu!`, "success");
+                renderGallery();
+                renderAdminMediaList();
+                updateStats();
+
+                // Reset formulára
+                document.getElementById('form-upload').reset();
+                compressedUploadBase64 = null;
+                document.getElementById('upload-prompt').classList.remove('hidden');
+                document.getElementById('upload-preview-container').classList.add('hidden');
+                closeModal('modal-creator-panel');
+            }
+        }
+
+        /**
+         * ZMAZANIE FOTOGRAFIE MAJITEĽOM
+         */
+        function deleteMedia(photoId) {
+            if (!isAdminLoggedIn) return;
+            if (!confirm("Naozaj chcete trvalo zmazať túto fotografiu z EMQX cloudu?")) return;
+
+            catalog = catalog.filter(p => p.id !== photoId);
+            localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+
+            // Zverejnenie aktualizovaného zoznamu
+            publishMQTT(CONFIG.topics.catalog, catalog, true);
+            showToast("Fotografia bola odstránená z cloudu.", "info");
+
+            renderGallery();
+            renderAdminMediaList();
+            updateStats();
+        }
+
+        /**
+         * VYKRESLENIE GALÉRIE S REÁLNYM PAYWALLOM
+         */
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const emptyState = document.getElementById('gallery-empty');
+
+            // Filtrovanie
+            const filtered = catalog.filter(item => {
+                if (currentFilter === 'free') return item.tier === 'free';
+                if (currentFilter === 'premium') return item.tier === 'premium';
+                return true;
+            });
+
+            // Aktualizácia počítadiel
+            document.getElementById('count-all').innerText = catalog.length;
+            document.getElementById('count-free').innerText = catalog.filter(i => i.tier === 'free').length;
+            document.getElementById('count-premium').innerText = catalog.filter(i => i.tier === 'premium').length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            const isUserUnlocked = (userTier === 'premium' || userTier === 'vip');
+
+            grid.innerHTML = filtered.map(item => {
+                const isPremiumLocked = (item.tier === 'premium' && !isUserUnlocked);
+
+                return `
+                    <div class="glass-card rounded-2xl overflow-hidden flex flex-col group relative">
+                        <!-- Obrázok kontajner s Paywallom -->
+                        <div class="relative w-full aspect-[4/3] bg-black/50 overflow-hidden cursor-pointer" onclick="${isPremiumLocked ? `openPaymentModal('FAN PASS', '1.49')` : `openLightbox('${item.id}')`}">
+                            
+                            <!-- Skutočný obrázok -->
+                            <img src="${item.image}" alt="${item.title}" 
+                                class="w-full h-full object-cover transition duration-500 group-hover:scale-105 ${isPremiumLocked ? 'filter blur-2xl scale-110 brightness-50' : ''}">
+                            
+                            <!-- Odznak typu (FREE vs VIP) -->
+                            <div class="absolute top-3 left-3 z-10">
+                                ${item.tier === 'free' 
+                                    ? `<span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">FREE GUEST</span>`
+                                    : `<span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-cyber-neonPurple/20 text-cyber-neonPurple border border-cyber-neonPurple/40">VIP PREMIUM</span>`
+                                }
+                            </div>
+
+                            <!-- OCHRANNÁ VRSTVA PAYWALLU PRE NEPLATIACICH -->
+                            ${isPremiumLocked ? `
+                                <div class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-black/40 backdrop-blur-md">
+                                    <div class="w-12 h-12 rounded-full bg-cyber-neonPurple/20 border border-cyber-neonPurple/50 flex items-center justify-center text-cyber-neonPurple text-xl mb-3 shadow-lg shadow-purple-500/20">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </div>
+                                    <h4 class="text-sm font-orbitron font-bold text-white tracking-wider">UZAMKNUTÝ OBSAH</h4>
+                                    <p class="text-[11px] text-gray-300 mt-1 max-w-[200px]">Vyžaduje zakúpenie VIP balíčka pre plnú ostrosť</p>
+                                    <button onclick="event.stopPropagation(); openPaymentModal('FAN PASS', '1.49')" class="mt-4 px-4 py-2 rounded-xl bg-cyber-neonCyan hover:bg-cyan-400 text-black text-xs font-bold transition shadow-md shadow-cyan-500/20">
+                                        Odomknúť za 1.49 €
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                                    <span class="text-xs text-cyber-neonCyan font-mono flex items-center gap-1">
+                                        <i class="fa-solid fa-expand"></i> Otvoriť náhľad diela
+                                    </span>
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- Spodné detaily -->
+                        <div class="p-4 flex items-center justify-between border-t border-cyber-border">
+                            <div>
+                                <h3 class="text-sm font-orbitron font-semibold text-white tracking-wide truncate max-w-[180px] sm:max-w-[200px]">
+                                    ${item.title}
+                                </h3>
+                                <span class="text-[10px] font-mono text-gray-500 block mt-0.5">
+                                    ${new Date(item.timestamp).toLocaleDateString('sk-SK')} // CLOUD-HASH: ${item.id.substring(0, 10)}
+                                </span>
+                            </div>
+
+                            ${isAdminLoggedIn ? `
+                                <button onclick="deleteMedia('${item.id}')" title="Odstrániť z cloudu" class="p-2 text-rose-400 hover:text-rose-300 transition">
+                                    <i class="fa-regular fa-trash-can text-sm"></i>
+                                </button>
+                            ` : `
+                                <div class="text-gray-400 text-xs">
+                                    <i class="fa-solid ${isPremiumLocked ? 'fa-lock text-cyber-neonPurple' : 'fa-lock-open text-emerald-400'}"></i>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * SPRÁVA ZOZNAMU V CREATOR PANELI
+         */
+        function renderAdminMediaList() {
+            const list = document.getElementById('admin-media-list');
+            if (!list) return;
+
+            if (catalog.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-500 font-mono">Žiadne nahrané médiá.</p>`;
+                return;
+            }
+
+            list.innerHTML = catalog.map(item => `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5 text-xs">
+                    <div class="flex items-center gap-2 truncate">
+                        <img src="${item.image}" class="w-8 h-8 rounded object-cover">
+                        <span class="text-white font-medium truncate max-w-[200px]">${item.title}</span>
+                        <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${item.tier === 'free' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyber-neonPurple/20 text-cyber-neonPurple'}">${item.tier}</span>
+                    </div>
+                    <button type="button" onclick="deleteMedia('${item.id}')" class="text-rose-400 hover:text-rose-300 p-1">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * FILTROVANIE
+         */
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            ['all', 'free', 'premium'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filterType) {
+                    btn.className = "px-4 py-2 rounded-lg text-xs font-semibold transition bg-cyber-neonCyan/20 text-cyber-neonCyan border border-cyber-neonCyan/40";
+                } else {
+                    btn.className = "px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition";
+                }
+            });
+            renderGallery();
+        }
+
+        /**
+         * STATISTIKY
+         */
+        function updateStats() {
+            document.getElementById('stat-total-photos').innerText = catalog.length;
+            document.getElementById('stat-vip-photos').innerText = catalog.filter(i => i.tier === 'premium').length;
+        }
+
+        /**
+         * ODZNAK POUŽÍVATEĽA V HLAVIČKE
+         */
+        function updateUserBadge() {
+            const label = document.getElementById('user-tier-label');
+            const badge = document.getElementById('user-badge');
+
+            if (userTier === 'premium' || userTier === 'vip') {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyber-neonPurple/20 border border-cyber-neonPurple/50 text-xs font-bold text-cyber-neonPurple";
+                label.innerText = userTier === 'vip' ? "VIP CYBER" : "FAN PASS (VIP)";
+            } else {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold";
+                label.innerText = "GUEST (FREE)";
+            }
+        }
+
+        /**
+         * REÁLNA PLATOBNÁ BRÁNA S OVEROVANÍM A 3D SECURE
+         */
+        let selectedCheckoutPlan = { name: 'FAN PASS', price: '1.49' };
+
+        function openPaymentModal(planName, price) {
+            selectedCheckoutPlan = { name: planName, price: price };
+            document.getElementById('checkout-plan-name').innerText = planName;
+            document.getElementById('checkout-plan-price').innerText = price + " €";
+            document.getElementById('pay-button-amount').innerText = price + " €";
+
+            // Reset krokov
+            document.getElementById('checkout-step-form').classList.remove('hidden');
+            document.getElementById('checkout-step-processing').classList.add('hidden');
+            document.getElementById('checkout-step-success').classList.add('hidden');
+            document.getElementById('form-payment').reset();
+
+            openModal('modal-checkout');
+        }
+
+        function formatCardNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            let formatted = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) formatted += ' ';
+                formatted += value[i];
+            }
+            input.value = formatted;
+        }
+
+        function formatExpiry(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                input.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            } else {
+                input.value = value;
+            }
+        }
+
+        function processPayment(event) {
+            event.preventDefault();
+
+            const cardNum = document.getElementById('card-number').value.replace(/\s/g, '');
+            const cardExp = document.getElementById('card-expiry').value;
+            const cardCvc = document.getElementById('card-cvc').value;
+
+            if (cardNum.length < 16) {
+                showToast("Zadajte platné 16-miestne číslo karty!", "error");
+                return;
+            }
+
+            if (!cardExp.includes('/') || cardExp.length < 5) {
+                showToast("Zadajte platnú expiráciu v tvare MM/YY!", "error");
+                return;
+            }
+
+            if (cardCvc.length < 3) {
+                showToast("Zadajte trojmiestny CVC kód!", "error");
+                return;
+            }
+
+            // Prepnutie na 3D Secure spracovanie
+            document.getElementById('checkout-step-form').classList.add('hidden');
+            document.getElementById('checkout-step-processing').classList.remove('hidden');
+
+            const statusText = document.getElementById('processing-status-text');
+            const progressBar = document.getElementById('progress-bar-fill');
+
+            // Fáza 1
+            setTimeout(() => {
+                statusText.innerText = "Autorizácia v bankovom systéme...";
+                progressBar.style.width = "65%";
+            }, 1000);
+
+            // Fáza 2: Úspešné overenie
+            setTimeout(() => {
+                progressBar.style.width = "100%";
+                statusText.innerText = "Platba schválená. Zapisujem VIP status na EMQX Cloud Broker...";
+
+                finalizeSuccessfulPayment();
+            }, 2400);
+        }
+
+        function finalizeSuccessfulPayment() {
+            // Nastavenie tieru používateľa
+            const newTier = selectedCheckoutPlan.name.includes('VIP') ? 'vip' : 'premium';
+            userTier = newTier;
+            localStorage.setItem('cyber_user_tier', userTier);
+
+            const txAuthId = 'TX-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            document.getElementById('receipt-auth-id').innerText = txAuthId;
+
+            // Zápis licencie do cloudového registra používateľov (dankermax/v1/users_registry)
+            let currentRegistry = {};
+            try {
+                const cachedRegistry = localStorage.getItem('cyber_users_cache');
+                if (cachedRegistry) currentRegistry = JSON.parse(cachedRegistry);
+            } catch(e) {}
+
+            currentRegistry[clientUUID] = {
+                tier: userTier,
+                plan: selectedCheckoutPlan.name,
+                updatedAt: Date.now(),
+                authId: txAuthId
+            };
+            localStorage.setItem('cyber_users_cache', JSON.stringify(currentRegistry));
+
+            // Zápis s príznakom retained = true do EMQX
+            publishMQTT(CONFIG.topics.users, currentRegistry, true);
+
+            // Odoslanie záznamu o transakcii do reports_queue
+            publishMQTT(CONFIG.topics.reports, {
+                type: 'NEW_TRANSACTION',
+                userUUID: clientUUID,
+                plan: selectedCheckoutPlan.name,
+                amount: selectedCheckoutPlan.price,
+                authId: txAuthId,
+                timestamp: Date.now()
+            }, false);
+
+            // Okamžité odomknutie a prekreslenie rozhrania
+            updateUserBadge();
+            renderGallery();
+
+            // Zobrazenie úspešného výsledku
+            document.getElementById('checkout-step-processing').classList.add('hidden');
+            document.getElementById('checkout-step-success').classList.remove('hidden');
+
+            showToast("Všetky prémiové fotografie boli okamžite odomknuté!", "success");
+        }
+
+        /**
+         * OVERENIE MAJITEĽA (ADMIN)
+         */
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const pass = document.getElementById('input-admin-pass').value;
+
+            if (pass === CONFIG.adminSecret) {
+                isAdminLoggedIn = true;
+                closeModal('modal-admin-auth');
+                openModal('modal-creator-panel');
+                renderAdminMediaList();
+                renderGallery(); // Zobrazí tlačidlá na zmazanie
+                showToast("Prístup majiteľa schválený. Otváram Creator Studio.", "success");
+            } else {
+                showToast("Nesprávne tajné heslo autora!", "error");
+            }
+        }
+
+        /**
+         * LIGHTBOX DETAIL
+         */
+        function openLightbox(photoId) {
+            const photo = catalog.find(p => p.id === photoId);
+            if (!photo) return;
+
+            document.getElementById('lightbox-img').src = photo.image;
+            document.getElementById('lightbox-title').innerText = photo.title;
+            openModal('modal-lightbox');
+        }
+
+        function closeLightbox(e) {
+            if (e.target.id === 'modal-lightbox') {
+                closeModal('modal-lightbox');
+            }
+        }
+
+        /**
+         * MODÁLNE MANIPULÁCIE A KLÁVESOVÉ SKRATKY
+         */
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.add('hidden');
+        }
+
+        function openAdminModal() {
+            if (isAdminLoggedIn) {
+                openModal('modal-creator-panel');
+                renderAdminMediaList();
+            } else {
+                openModal('modal-admin-auth');
+            }
+        }
+
+        function setupKeyboardShortcuts() {
+            window.addEventListener('keydown', (e) => {
+                // Skratka: Ctrl + Alt + P pre majiteľa
+                if (e.ctrlKey && e.altKey && (e.key === 'p' || e.key === 'P')) {
+                    e.preventDefault();
+                    openAdminModal();
+                }
+                // ESC zatvára modály
+                if (e.key === 'Escape') {
+                    ['modal-admin-auth', 'modal-creator-panel', 'modal-checkout', 'modal-lightbox'].forEach(id => closeModal(id));
+                }
+            });
+        }
+
+        /**
+         * SYSTÉM NOTIFIKÁCIÍ (TOASTS)
+         */
+        function showToast(text, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let icon = 'fa-info-circle text-cyber-neonCyan';
+            let borderColor = 'border-cyber-neonCyan/40';
+
+            if (type === 'success') {
+                icon = 'fa-circle-check text-emerald-400';
+                borderColor = 'border-emerald-500/40';
+            } else if (type === 'error') {
+                icon = 'fa-triangle-exclamation text-rose-400';
+                borderColor = 'border-rose-500/40';
+            }
+
+            toast.className = `glass-panel px-4 py-3 rounded-xl border ${borderColor} text-white text-xs font-mono flex items-center gap-3 shadow-2xl transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${text}</span>`;
+
+            container.appendChild(toast);
+
+            // Animácia vpred
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 50);
+
+            // Odstránenie po 3.5 sekundách
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-8');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

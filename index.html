@@ -109,6 +109,7 @@
                     <span id="mqtt-status-text">Pripájam Cloud...</span>
                 </div>
 
+                <!-- Používateľský VIP odznak so zobrazením expirácie predplatného -->
                 <div id="user-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold">
                     <i class="fa-solid fa-user-shield text-gray-400"></i>
                     <span id="user-tier-label" class="text-gray-300">GUEST</span>
@@ -190,7 +191,7 @@
                 <h2 class="text-3xl font-orbitron font-extrabold text-white">
                     VIP <span class="text-cyber-neonCyan">ODOMYKANIE</span>
                 </h2>
-                <p class="text-xs text-gray-400 mt-2">Zakúpením balíčka okamžite odstránite blur zo všetkých prémiových fotografií.</p>
+                <p class="text-xs text-gray-400 mt-2">Zakúpením balíčka okamžite odstránite blur zo všetkých prémiových fotografií na 30 dní.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -215,7 +216,7 @@
                     <div>
                         <div class="text-xs font-mono text-cyber-neonCyan uppercase">Plný prístup</div>
                         <h3 class="text-lg font-orbitron font-bold text-white mt-1">FAN PASS</h3>
-                        <div class="mt-3 text-3xl font-orbitron font-black text-white">1.49 € <span class="text-xs text-gray-400">/ mesiac</span></div>
+                        <div class="mt-3 text-3xl font-orbitron font-black text-white">1.49 € <span class="text-xs text-gray-400">/ 30 dní</span></div>
                         <p class="text-xs text-gray-300 mt-4">Odomkne všetky PREMIUM snímky v plnej ostrosti bez rozmazania.</p>
                     </div>
                     <button onclick="openPaymentModal('FAN PASS', '1.49')" class="mt-6 w-full py-3 rounded-xl bg-cyber-neonCyan hover:bg-cyan-400 text-black text-xs font-bold transition">
@@ -228,7 +229,7 @@
                     <div>
                         <div class="text-xs font-mono text-cyber-neonPurple uppercase">VIP Fanúšik</div>
                         <h3 class="text-lg font-orbitron font-bold text-white mt-1">VIP CYBER ACCESS</h3>
-                        <div class="mt-3 text-3xl font-orbitron font-black text-white">2.99 € <span class="text-xs text-gray-400">/ mesiac</span></div>
+                        <div class="mt-3 text-3xl font-orbitron font-black text-white">2.99 € <span class="text-xs text-gray-400">/ 30 dní</span></div>
                         <p class="text-xs text-gray-300 mt-4">Neobmedzený prístup a okamžitá synchronizácia nových dropov.</p>
                     </div>
                     <button onclick="openPaymentModal('VIP CYBER ACCESS', '2.99')" class="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-cyber-neonPurple to-cyber-neonPink text-white text-xs font-bold transition">
@@ -271,7 +272,7 @@
         </div>
     </div>
 
-    <!-- ================= MODÁL: CREATOR PANEL (UPLOAD DO CLOUDU) ================= -->
+    <!-- ================= MODÁL: CREATOR PANEL (UPLOAD DO CLOUDU S ČASOM EXPIRÁCIE) ================= -->
     <div id="modal-creator-panel" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 overflow-y-auto">
         <div class="glass-panel w-full max-w-xl p-6 rounded-3xl border border-cyber-neonPurple/50 relative my-6">
             <button onclick="closeModal('modal-creator-panel')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
@@ -315,6 +316,17 @@
                             <option value="premium">PREMIUM (Vyžaduje VIP Paywall)</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- NOVÉ: Voliteľný čas expirácie obrázka -->
+                <div>
+                    <label class="block text-[11px] font-mono text-gray-300 mb-1 flex items-center justify-between">
+                        <span><i class="fa-regular fa-clock text-cyber-neonCyan mr-1"></i> Čas expirácie (odstráni z databázy - voliteľné)</span>
+                        <span class="text-[9px] text-gray-500 font-normal">Nemusíte zadávať</span>
+                    </label>
+                    <input type="datetime-local" id="input-photo-expires"
+                        class="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-cyber-neonPurple font-mono">
+                    <span class="text-[10px] text-gray-500 mt-1 block">Ak pole necháte prázdne, fotografia zostane v cloude natrvalo. Po uplynutí zadaného času sa automaticky trvalo vymaže z databázy.</span>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3 border-t border-cyber-border">
@@ -379,7 +391,7 @@
                     </div>
 
                     <button type="submit" class="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-cyber-neonCyan to-cyber-neonPurple text-black font-bold text-xs shadow-md transition">
-                        Zaplatiť a Odomknúť VIP Galériu
+                        Zaplatiť a Aktivovať 30-dňové Predplatné
                     </button>
                 </form>
             </div>
@@ -394,8 +406,12 @@
                 <div class="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400 text-2xl mb-3">
                     <i class="fa-solid fa-check"></i>
                 </div>
-                <h4 class="text-lg font-orbitron font-bold text-white">Platba Schválená!</h4>
+                <h4 class="text-lg font-orbitron font-bold text-white">Predplatné Úspešne Aktivované!</h4>
                 <p class="text-xs text-gray-300 mt-1">Prémiové fotografie boli odomknuté.</p>
+                <div class="mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-gray-300 text-left">
+                    <div class="flex justify-between"><span>Platnosť predplatného do:</span> <span id="receipt-expiry-date" class="text-cyber-neonCyan font-bold"></span></div>
+                    <div class="flex justify-between mt-1 text-[11px] text-gray-400"><span>Trvanie:</span> <span>30 dní</span></div>
+                </div>
                 <button onclick="closeModal('modal-checkout')" class="mt-4 w-full py-2.5 rounded-xl bg-cyber-neonCyan text-black font-bold text-xs">
                     Vstúpiť do Galérie
                 </button>
@@ -428,13 +444,14 @@
             }
         };
 
-        // Skrátené, bezpečné Client ID (menej ako 23 znakov)
         const clientUUID = 'u_' + Math.random().toString(36).substring(2, 9);
         const mqttClientId = 'c_' + Math.random().toString(36).substring(2, 10);
 
         let mqttClient = null;
         let isConnected = false;
         let userTier = localStorage.getItem('cyber_user_tier') || 'free';
+        let userTierExpires = parseInt(localStorage.getItem('cyber_user_tier_expires') || '0', 10); // Timestamp kedy skončí predplatné
+
         let currentFilter = 'all';
         let isAdminLoggedIn = false;
         let catalog = [];
@@ -447,6 +464,7 @@
                 title: "Cyberpunk Metropolis 2099",
                 tier: "free",
                 timestamp: Date.now() - 3600000,
+                expiresAt: null,
                 isSeed: true,
                 image: createSeedCanvas("CYBER METROPOLIS", "#06b6d4")
             },
@@ -455,6 +473,7 @@
                 title: "VIP Neural Core Archive",
                 tier: "premium",
                 timestamp: Date.now() - 1800000,
+                expiresAt: null,
                 isSeed: true,
                 image: createSeedCanvas("VIP CORE MATRIX", "#ec4899")
             }
@@ -472,10 +491,18 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadCatalogFromStorage();
+            checkSubscriptionExpiration(); // Kontrola stavu predplatného pri štarte
+            checkAndPurgeExpiredPhotos();  // Kontrola expirovaných fotiek pri štarte
             updateUserBadge();
             renderGallery();
             connectMQTT();
             setupShortcuts();
+
+            // Pravidelná kontrola expirácie predplatného aj expirovaných obrázkov každých 10 sekúnd
+            setInterval(() => {
+                checkSubscriptionExpiration();
+                checkAndPurgeExpiredPhotos();
+            }, 10000);
         });
 
         function loadCatalogFromStorage() {
@@ -492,14 +519,56 @@
         }
 
         /**
-         * SPOĽAHLIVÉ PRIPOJENIE NA EMQX WSS (S DUAL-PORT FALLBACKOM)
+         * KONTROLA PRETLATNÉHO: Ak vypršal čas 30 dní, zruší VIP a vráti FREE
+         */
+        function checkSubscriptionExpiration() {
+            if (userTier !== 'free' && userTierExpires > 0) {
+                const now = Date.now();
+                if (now >= userTierExpires) {
+                    userTier = 'free';
+                    userTierExpires = 0;
+                    localStorage.setItem('cyber_user_tier', 'free');
+                    localStorage.removeItem('cyber_user_tier_expires');
+                    updateUserBadge();
+                    renderGallery();
+                    showToast("Vaše VIP predplatné vypršalo. Prístup bol vrátený na FREE.", "info");
+                }
+            }
+        }
+
+        /**
+         * KONTROLA EXPIRÁCIE OBRÁZKOV: Po uplynutí času a dňa sa obrázok vymaže z databázy aj z cloudu
+         */
+        function checkAndPurgeExpiredPhotos() {
+            const now = Date.now();
+            const initialCount = catalog.length;
+
+            // Filtrujeme iba tie fotky, ktoré ešte neexpirovali (alebo nemajú nastavenú expiráciu)
+            const activePhotos = catalog.filter(photo => {
+                if (photo.expiresAt && now >= photo.expiresAt) {
+                    return false; // Expirované -> vymazať z databázy
+                }
+                return true;
+            });
+
+            if (activePhotos.length !== initialCount) {
+                catalog = activePhotos;
+                localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+                publishMQTT(CONFIG.topics.catalog, catalog, true);
+                renderGallery();
+                if (isAdminLoggedIn) renderAdminMediaList();
+                showToast("Expirovaný obrázok bol automaticky vymazaný z databázy.", "info");
+            }
+        }
+
+        /**
+         * MQTT SPOJENIE (EMQX WSS)
          */
         function connectMQTT(useSSLPort = true) {
             const statusBadge = document.getElementById('mqtt-status-badge');
             const statusText = document.getElementById('mqtt-status-text');
 
             const brokerHost = "broker.emqx.io";
-            // Ak beží stránka na HTTPS, musí ísť cez 8084 (WSS). Ak je lokálny súbor a zlyhá, skúsi 8083 (WS).
             const isHttps = window.location.protocol === 'https:';
             const port = isHttps ? 8084 : (useSSLPort ? 8084 : 8083);
             const useSSL = isHttps ? true : useSSLPort;
@@ -518,9 +587,9 @@
                     try {
                         const data = JSON.parse(message.payloadString);
                         if (message.destinationName === CONFIG.topics.catalog && Array.isArray(data)) {
-                            // Zlúčenie cloudových fotografií s lokálnym stavom
                             catalog = data;
                             localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
+                            checkAndPurgeExpiredPhotos();
                             renderGallery();
                             if (isAdminLoggedIn) renderAdminMediaList();
                             showToast("Galéria synchronizovaná z EMQX Cloudu", "info");
@@ -546,7 +615,6 @@
                     },
                     onFailure: (err) => {
                         console.warn("Chyba portu " + port + ":", err.errorMessage);
-                        // Ak zlyhal 8084, prepneme na alternatívu
                         if (useSSLPort && !isHttps) {
                             connectMQTT(false);
                         } else {
@@ -560,9 +628,6 @@
             }
         }
 
-        /**
-         * ODOSLANIE SPRÁVY S AUTOMATICKÝM ZOTAVENÍM
-         */
         function publishMQTT(topic, payloadObj, retained = true) {
             const jsonStr = JSON.stringify(payloadObj);
 
@@ -576,7 +641,7 @@
                 const message = new Paho.MQTT.Message(jsonStr);
                 message.destinationName = topic;
                 message.retained = retained;
-                message.qos = 0; // QoS 0 garantuje bleskové odoslanie bez deadlockov v MQTT brokeroch
+                message.qos = 0;
                 mqttClient.send(message);
                 return true;
             } catch (err) {
@@ -586,9 +651,6 @@
             }
         }
 
-        /**
-         * ZMENŠENIE OBRÁZKA (CANVAS KOMPRESIA NA 18-28 KB)
-         */
         function previewSelectedImage(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -597,7 +659,7 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    const maxDim = 560; // Optimálny rozmer pre WebSocket rámec
+                    const maxDim = 560;
                     let w = img.width, h = img.height;
 
                     if (w > h && w > maxDim) {
@@ -613,7 +675,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
 
-                    // Kompresia 0.58 zabezpečí veľkosť ~20 KB
                     compressedUploadBase64 = canvas.toDataURL('image/jpeg', 0.58);
                     const sizeKB = Math.round((compressedUploadBase64.length * 0.75) / 1024);
 
@@ -628,7 +689,7 @@
         }
 
         /**
-         * PUBLIKOVANIE NOVÉHO ZÁBERU MAJITEĽOM
+         * PUBLIKOVANIE NOVÉHO ZÁBERU MAJITEĽOM S VOLITEĽNOU EXPIRÁCIOU
          */
         function handleMediaPublish(event) {
             event.preventDefault();
@@ -642,19 +703,22 @@
             const title = document.getElementById('input-photo-title').value.trim() || "Bez názvu";
             const tier = document.getElementById('select-photo-tier').value;
 
+            // Spracovanie zadaného času expirácie
+            const expiresInput = document.getElementById('input-photo-expires').value;
+            const expiresAt = expiresInput ? new Date(expiresInput).getTime() : null;
+
             const newPhoto = {
                 id: 'm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5),
                 title: title,
                 tier: tier,
                 timestamp: Date.now(),
+                expiresAt: expiresAt, // Čas a deň kedy sa vymaže (alebo null)
                 image: compressedUploadBase64
             };
 
-            // Pridanie novej fotky na začiatok
             catalog = [newPhoto, ...catalog.filter(p => !p.isSeed)];
             localStorage.setItem('cyber_catalog_cache', JSON.stringify(catalog));
 
-            // Odoslanie do cloudu ako RETAINED správa
             publishMQTT(CONFIG.topics.catalog, catalog, true);
 
             showToast(`Fotografia "${title}" bola publikovaná do cloudu!`, "success");
@@ -670,9 +734,6 @@
             closeModal('modal-creator-panel');
         }
 
-        /**
-         * ZMAZANIE FOTOGRAFIE Z CLOUDU
-         */
         function deleteMedia(id) {
             if (!isAdminLoggedIn) return;
             if (!confirm("Trvalo vymazať túto fotografiu z cloudu?")) return;
@@ -688,7 +749,7 @@
         }
 
         /**
-         * VYKRESLENIE GALÉRIE
+         * VYKRESLENIE GALÉRIE S ODPOČTOM / ČASOM EXPIRÁCIE
          */
         function renderGallery() {
             const grid = document.getElementById('gallery-grid');
@@ -715,6 +776,17 @@
 
             grid.innerHTML = filtered.map(item => {
                 const isLocked = (item.tier === 'premium' && !isVIP);
+
+                // Zobrazenie času expirácie fotky, ak je nastavený
+                let expiryHtml = '';
+                if (item.expiresAt) {
+                    const expDate = new Date(item.expiresAt);
+                    expiryHtml = `
+                        <span class="text-[9px] font-mono text-amber-400 block mt-0.5" title="Automatické vymazanie z databázy">
+                            <i class="fa-regular fa-clock mr-1"></i>Expiruje: ${expDate.toLocaleDateString('sk-SK')} ${expDate.toLocaleTimeString('sk-SK', {hour:'2-digit', minute:'2-digit'})}
+                        </span>
+                    `;
+                }
 
                 return `
                     <div class="glass-card rounded-2xl overflow-hidden flex flex-col group relative">
@@ -743,7 +815,8 @@
                         <div class="p-3.5 flex items-center justify-between border-t border-cyber-border">
                             <div>
                                 <h3 class="text-xs font-orbitron font-semibold text-white truncate max-w-[170px]">${item.title}</h3>
-                                <span class="text-[9px] font-mono text-gray-500 block mt-0.5">${new Date(item.timestamp).toLocaleDateString('sk-SK')}</span>
+                                <span class="text-[9px] font-mono text-gray-500 block mt-0.5">Pridané: ${new Date(item.timestamp).toLocaleDateString('sk-SK')}</span>
+                                ${expiryHtml}
                             </div>
                             ${isAdminLoggedIn ? `
                                 <button onclick="deleteMedia('${item.id}')" title="Vymazať z cloudu" class="text-rose-400 hover:text-rose-300 p-1">
@@ -768,7 +841,10 @@
             }
             list.innerHTML = items.map(item => `
                 <div class="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5 text-xs">
-                    <span class="text-white truncate max-w-[200px]">${item.title}</span>
+                    <div class="truncate max-w-[200px]">
+                        <span class="text-white block truncate">${item.title}</span>
+                        ${item.expiresAt ? `<span class="text-[9px] font-mono text-amber-400">Expirácia: ${new Date(item.expiresAt).toLocaleDateString('sk-SK')} ${new Date(item.expiresAt).toLocaleTimeString('sk-SK', {hour:'2-digit', minute:'2-digit'})}</span>` : '<span class="text-[9px] font-mono text-gray-500">Bez expirácie (trvalé)</span>'}
+                    </div>
                     <button type="button" onclick="deleteMedia('${item.id}')" class="text-rose-400 hover:text-rose-300">
                         <i class="fa-solid fa-trash text-xs"></i>
                     </button>
@@ -787,12 +863,24 @@
             renderGallery();
         }
 
+        /**
+         * ZOBRAZENIE VIP ODZNAKU AJ S DÁTUMOM KONCA PREDPLATNÉHO
+         */
         function updateUserBadge() {
             const label = document.getElementById('user-tier-label');
             const badge = document.getElementById('user-badge');
+
             if (userTier === 'premium' || userTier === 'vip') {
                 badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyber-neonPurple/20 border border-cyber-neonPurple/50 text-xs font-bold text-cyber-neonPurple";
-                label.innerText = userTier === 'vip' ? "VIP CYBER" : "FAN PASS";
+                
+                // Formátovanie dátumu expirácie predplatného
+                let expiryText = '';
+                if (userTierExpires > 0) {
+                    const exp = new Date(userTierExpires);
+                    expiryText = ` (do ${exp.toLocaleDateString('sk-SK')} ${exp.toLocaleTimeString('sk-SK', {hour:'2-digit', minute:'2-digit'})})`;
+                }
+
+                label.innerHTML = `${userTier === 'vip' ? "VIP CYBER" : "FAN PASS"}<span class="text-[10px] text-gray-300 font-mono font-normal ml-1">${expiryText}</span>`;
             } else {
                 badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold";
                 label.innerText = "GUEST";
@@ -800,7 +888,7 @@
         }
 
         /**
-         * PLATBA A ODOMKNUTIE OBSAHU
+         * PLATBA A NASTAVENIE 30-DŇOVÉHO PREDPLATNÉHO
          */
         let currentPlan = { name: 'FAN PASS', price: '1.49' };
 
@@ -831,24 +919,35 @@
             document.getElementById('checkout-step-processing').classList.remove('hidden');
 
             setTimeout(() => {
+                // Nastavenie tieru a 30-dňovej expirácie predplatného
                 userTier = currentPlan.name.includes('VIP') ? 'vip' : 'premium';
-                localStorage.setItem('cyber_user_tier', userTier);
+                userTierExpires = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 dní od platby
 
-                // Zápis licencie do cloudu
-                publishMQTT(CONFIG.topics.users, { [clientUUID]: { tier: userTier, plan: currentPlan.name } }, true);
+                localStorage.setItem('cyber_user_tier', userTier);
+                localStorage.setItem('cyber_user_tier_expires', userTierExpires.toString());
+
+                // Zápis do cloudu s dátumom expirácie predplatného
+                publishMQTT(CONFIG.topics.users, { 
+                    [clientUUID]: { 
+                        tier: userTier, 
+                        plan: currentPlan.name, 
+                        expiresAt: userTierExpires 
+                    } 
+                }, true);
 
                 updateUserBadge();
                 renderGallery();
 
+                // Zobrazenie potvrdenia s dátumom expirácie
+                const expDate = new Date(userTierExpires);
+                document.getElementById('receipt-expiry-date').innerText = `${expDate.toLocaleDateString('sk-SK')} ${expDate.toLocaleTimeString('sk-SK', {hour:'2-digit', minute:'2-digit'})}`;
+
                 document.getElementById('checkout-step-processing').classList.add('hidden');
                 document.getElementById('checkout-step-success').classList.remove('hidden');
-                showToast("VIP Obsah bol úspešne odomknutý!", "success");
+                showToast("Predplatné na 30 dní bolo úspešne aktivované!", "success");
             }, 1800);
         }
 
-        /**
-         * PRIHLÁSENIE MAJITEĽA
-         */
         function handleAdminLogin(e) {
             e.preventDefault();
             const pass = document.getElementById('input-admin-pass').value;
